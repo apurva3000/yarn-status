@@ -1,11 +1,9 @@
 package fi.yarnstatus.service;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import org.json.simple.JSONObject;
@@ -28,8 +26,8 @@ public class StatusService {
 		 Client client = Client.create();
 
 		 WebResource webResource = client
-				 .resource("http://localhost:8080/YarnStatus/rest/status/dummy");
-		 		 //.resource("http://localhost:8088/ws/v1/cluster/metrics");
+				 //.resource("http://localhost:8080/YarnStatus/rest/status/dummy");
+		 		 .resource("http://localhost:8088/ws/v1/cluster/metrics");
 
 		 ClientResponse response = webResource.accept("application/json")
 				 .get(ClientResponse.class);
@@ -45,19 +43,30 @@ public class StatusService {
 		 JSONObject clusterMetricsObj = (JSONObject)output_obj.get("clusterMetrics");
 		 
 		 JSONObject obj = new JSONObject();
-		 obj.put("The available memory is ", clusterMetricsObj.get("availableMB"));
-		 obj.put("Total Applications running currently are: ", clusterMetricsObj.get("appsRunning"));
-		 obj.put("Total Applications running pending are: ", clusterMetricsObj.get("appsPending"));
-
-			
-		System.out.println(InetAddress.getLocalHost().getHostName());
-		String result = obj.toString();
-		return Response.status(200).entity(result).build();
+		 
+		 obj.put("Total Applications currently running: ", clusterMetricsObj.get("appsRunning"));
+		 obj.put("Total Applications currently pending: ", clusterMetricsObj.get("appsPending"));
+		 double avail_mb = ((Long)clusterMetricsObj.get("availableMB"));
+		 double alloc_mb = ((Long)clusterMetricsObj.get("allocatedMB"));
+		 
+		 
+		 double percent_resource_double = (alloc_mb / (alloc_mb + avail_mb))*100;
+		 long percent_resource = (long)percent_resource_double;
+		 
+		 if(percent_resource > 89)
+			 percent_resource = 100;
+		 
+		 obj.put("Resources Used (in percent)", percent_resource);
+		 obj.put("Resources Available (in percent)", 100 - percent_resource);
+		 
+		 
+		 String result = obj.toString();
+		 return Response.status(200).entity(result).build();
 	  }
 	 
 	 
 	 @SuppressWarnings("unchecked")
-	@GET
+	 @GET
 	 @Path("/dummy")
 	 @Produces("application/json")
 	 public Response dummyService() {
@@ -65,9 +74,8 @@ public class StatusService {
 		JSONObject clusterMetrics = new JSONObject();
 		JSONObject jsonObject = new JSONObject();
 		
-		jsonObject.put("availableMB", 10);
-		jsonObject.put("allocatedMB", 10);
-		jsonObject.put("Vcores", 1);
+		jsonObject.put("availableMB", 50);
+		jsonObject.put("allocatedMB", 90);
 		jsonObject.put("appsRunning", 5);
 		jsonObject.put("appsPending", 1);
 	
