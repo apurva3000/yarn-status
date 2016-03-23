@@ -8,7 +8,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import org.json.JSONException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -24,12 +23,13 @@ public class StatusService {
 	 @SuppressWarnings("unchecked")
 	 @GET
 	 @Produces("application/json")
-	 public Response getStatus() throws JSONException, ParseException, UnknownHostException {
+	 public Response getStatus() throws ParseException, UnknownHostException {
 
 		 Client client = Client.create();
 
 		 WebResource webResource = client
 				 .resource("http://localhost:8080/YarnStatus/rest/status/dummy");
+		 		 //.resource("http://localhost:8088/ws/v1/cluster/metrics");
 
 		 ClientResponse response = webResource.accept("application/json")
 				 .get(ClientResponse.class);
@@ -50,7 +50,7 @@ public class StatusService {
 		 obj.put("Total Applications running pending are: ", clusterMetricsObj.get("appsPending"));
 
 			
-			System.out.println(InetAddress.getLocalHost().getHostName());
+		System.out.println(InetAddress.getLocalHost().getHostName());
 		String result = obj.toString();
 		return Response.status(200).entity(result).build();
 	  }
@@ -60,7 +60,7 @@ public class StatusService {
 	@GET
 	 @Path("/dummy")
 	 @Produces("application/json")
-	 public Response dummyService() throws JSONException {
+	 public Response dummyService() {
 
 		JSONObject clusterMetrics = new JSONObject();
 		JSONObject jsonObject = new JSONObject();
