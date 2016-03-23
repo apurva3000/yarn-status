@@ -1,4 +1,4 @@
-package fi.csc.poutasparkcourse.main;
+package fi.yarnstatus.service;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
